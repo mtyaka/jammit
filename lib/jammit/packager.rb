@@ -36,8 +36,11 @@ module Jammit
       output_dir ||= File.join(Jammit.public_root, Jammit.package_path)
       cacheable(:js, output_dir).each  {|p|
         javascripts, source_maps = pack_javascripts(p)
+        if source_maps
+          javascripts << "\n//# sourceMappingURL=#{p}.js.map?ts=#{Time.now.to_i}"
+          cache(p, 'js.map', source_maps, output_dir)
+        end
         cache(p, 'js',  javascripts, output_dir)
-        cache(p, 'js.map', source_maps, output_dir) if source_maps
       }
       cacheable(:css, output_dir).each do |p|
         cache(p, 'css', pack_stylesheets(p), output_dir)
@@ -86,7 +89,7 @@ module Jammit
 
     # Return the compressed contents of a javascript package.
     def pack_javascripts(package)
-      compressor.compress_js(package_for(package, :js)[:paths])
+      compressor.compress_js(package_for(package, :js)[:paths], package)
     end
 
     # Return the compiled contents of a JST package.

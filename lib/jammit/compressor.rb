@@ -78,13 +78,22 @@ module Jammit
 
     # Concatenate together a list of JavaScript paths, and pass them through the
     # YUI Compressor (with munging enabled). JST can optionally be included.
-    def compress_js(paths)
+    def compress_js(paths, package)
       if (jst_paths = paths.grep(Jammit.template_extension_matcher)).empty?
         js = concatenate(paths)
       else
         js = concatenate(paths - jst_paths) + compile_jst(jst_paths)
       end
-      Jammit.compress_assets ? @js_compressor.compress(js) : js
+      if Jammit.compress_assets
+        if @options[:source_map] && @options[:source_map][:sources_content]
+          options = Marshal.load(Marshal.dump(@options))  # deep copy of @options
+          options[:source_map][:filename] = "#{package}.js"
+          @js_compressor = @js_compressor.class.new(options)
+        end
+        @js_compressor.compress(js)
+      else
+        js
+      end
     end
 
     # Concatenate and compress a list of CSS stylesheets. When compressing a
