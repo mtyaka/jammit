@@ -58,7 +58,7 @@ module Jammit
       :jsmin    => {},
       :yui      => {:munge => true},
       :closure  => {},
-      :uglifier => {:copyright => false}
+      :uglifier => {}
     }
 
     # CSS compression can be provided with YUI Compressor or sass. JS
